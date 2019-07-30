@@ -114,32 +114,55 @@ class Graph:
 
 
 if __name__ == '__main__':
+    # TODO: Put into Python unit tests
 
-    vertex1 = Vertex('David')
-    vertex2 = Vertex('Sue')
+    def test_simple_graph() -> None:
+        """
+        Test 2 lineages
+        * David -> Sue -> Robert
+        * Sam -> Debbie
+        * Sue -> Sam
 
-    island_vertex = Vertex('island')
-    island_vertex2 = Vertex('island points to itself')
+        2 types of islands:
+        * Single island (no directional outbound or inbound)
+        * Single island (with reference to itself)
 
-    graph = Graph()
+        :return: None
+        """
+        graph = Graph()
 
-    graph.add_vertex(vertex1)
-    graph.add_vertex(vertex2)
-    graph.add_vertex(island_vertex)
-    graph.add_vertex(island_vertex2)
+        island_vertex = Vertex('island')
+        island_vertex2 = Vertex('island points to itself')
+        graph.add_vertex(island_vertex)
+        graph.add_vertex(island_vertex2)
 
-    graph.add_edge(vertex1, vertex2, {'weight': 100})
-    graph.add_edge(Vertex('Sam'), Vertex('Debbie'))
-    graph.add_edge(island_vertex2, island_vertex2)
+        david_vertex = Vertex('David')
+        sue_vertex = Vertex('Sue')
+        robert_vertex = Vertex('Robert')
 
-    print('\n*** Graph Edges\n')
-    print(graph)  # list of set of verticies
-    print('\n*** Graph Verticies')
-    verticies = graph.verticies()
-    for vertex in verticies:
-        print(vertex)
+        # manual vertex addition
+        graph.add_vertex(david_vertex)
+        graph.add_vertex(sue_vertex)
 
+        graph.add_edge(david_vertex, sue_vertex, {'weight': 100})  # example client data reflecting weight for the edge
+        graph.add_edge(sue_vertex, robert_vertex, {'weight': 5})
 
+        # add edge adds the vertex without having an existing vertex / shorthand an edge requires an vertex to existence
+        sam_vertex = Vertex('Sam')
+        graph.add_edge(sam_vertex, Vertex('Debbie'))
+        graph.add_edge(island_vertex2, island_vertex2)
+
+        # have a fork off original lineage
+        graph.add_edge(sue_vertex, sam_vertex)
+
+        print('\n*** Graph Edges\n')
+        print(graph)  # list of set of verticies
+        print('\n*** Graph Verticies')
+        verticies = graph.verticies()
+        for vertex in verticies:
+            print(vertex)
+
+    test_simple_graph()
 
 
 
