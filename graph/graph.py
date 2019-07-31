@@ -3,6 +3,7 @@ Implementation of a Graph data structure
 
 """
 from uuid import uuid4
+from typing import Callable
 
 
 class Vertex:
@@ -112,9 +113,94 @@ class Graph:
                     result.append(edge)
         return result
 
+    def depth_first_traversal(self, start_vertex: Vertex, callback: Callable) -> None:
+        """
+        Depth traversal starting with the start_vertex
+
+        :param start_vertex: Starting vertex to start the search
+        :param callback: Callback function provided by the caller to be invoked when a vertex node is visited
+            Client can use the callback for search criterion and exit the traversal if their condition are meet
+            by simply returning False
+        :return: None
+        """
+        visited = []
+
+        def __depth_first_traversal(current_vertex: Vertex) -> None:
+            """
+            :param current_vertex: Current vertex for processing
+
+            :return:
+            """
+            queue = self.__verticies_dict[current_vertex].keys()
+
+            for current_queue_vertex in queue:
+                if callback:
+                    if not callback(current_queue_vertex):
+                        return  # TODO: Bug here, throw a exception to be caught at top level to exit deep recursion
+                __depth_first_traversal(current_queue_vertex)
+            visited.append(current_vertex)
+
+        __depth_first_traversal(start_vertex)
+        print('\nVisited verticies:')
+        for vertex in visited:
+            print(vertex)
+
+    def breath_first_traversal(self, start_vertex: Vertex, callback: Callable) -> None:
+        """
+        Breadth First Traversal:
+        Ensures each level by level (or children are processed
+
+        :param start_vertex: Starting vertex to process
+        :param callback: Client provided callback as each node is processed
+            Client can use the callback for search criterion and exit the traversal if their condition are meet
+            by simply returning False
+
+        :return:
+        """
+        visited = {}  # Key is the vertex reference, Value is visited boolean flag
+
+        # set operation is much faster than array due to copy operations... also guarantee uniqueness
+        # order of processing is hierarchical or level based
+        queue = set()
+
+        current_vertex = start_vertex
+        queue.add(start_vertex)
+        visited[start_vertex] = True
+
+        while queue:
+            if self.__verticies_dict[current_vertex]:
+                # neighbors exist
+                if current_vertex in queue:
+                    queue.remove(current_vertex)  # only be valid for initial node/vertex
+                else:
+                    current_vertex = queue.pop()
+            else:
+                # no neighbors, dead end
+                current_vertex = queue.pop()
+
+            if not callback(current_vertex):
+                break
+
+            for neighbor in self.__verticies_dict[current_vertex]:
+                if neighbor in visited:
+                    continue  # default, this is already set to True as the key would not in visited if not visited
+                else:
+                    # not visited: ensure we add the neighbor vertex and visit all elements in the queue
+                    queue.add(neighbor)
+                    visited[neighbor] = True
+
 
 if __name__ == '__main__':
     # TODO: Put into Python unit tests
+
+    def echo_value(vertex: Vertex):
+        """
+        Callback used traverse the graph traversal
+
+        :return:
+        """
+        print(vertex)
+        return True
 
     def test_simple_graph() -> None:
         """
@@ -135,6 +221,7 @@ if __name__ == '__main__':
         island_vertex2 = Vertex('island points to itself')
         graph.add_vertex(island_vertex)
         graph.add_vertex(island_vertex2)
+        graph.add_edge(island_vertex2, island_vertex2)
 
         david_vertex = Vertex('David')
         sue_vertex = Vertex('Sue')
@@ -143,6 +230,7 @@ if __name__ == '__main__':
         # manual vertex addition
         graph.add_vertex(david_vertex)
         graph.add_vertex(sue_vertex)
+        graph.add_vertex(robert_vertex)
 
         graph.add_edge(david_vertex, sue_vertex, {'weight': 100})  # example client data reflecting weight for the edge
         graph.add_edge(sue_vertex, robert_vertex, {'weight': 5})
@@ -150,7 +238,6 @@ if __name__ == '__main__':
         # add edge adds the vertex without having an existing vertex / shorthand an edge requires an vertex to existence
         sam_vertex = Vertex('Sam')
         graph.add_edge(sam_vertex, Vertex('Debbie'))
-        graph.add_edge(island_vertex2, island_vertex2)
 
         # have a fork off original lineage
         graph.add_edge(sue_vertex, sam_vertex)
@@ -162,8 +249,59 @@ if __name__ == '__main__':
         for vertex in verticies:
             print(vertex)
 
-    test_simple_graph()
+        print('\n*** Start Breadth Traversal')
+        graph.depth_first_traversal(david_vertex, echo_value)
+
+    # test_simple_graph()
+
+    def test_complex_graph():
+        """
+        More complex graph
+
+        Starting center vertex: David
+        David: 2 children
+            Sue
+            Sally
+            Debbie
+        Sally:
+            Henry
+        Henry:
+            Alex
+        Alex:
+            Debbie
+        Sue:
+            Frank
+        Frank:
+            Tom
+        Tom:
+            Hank
+
+        :return:
+        """
+        all_verticies = {'Sally': None, 'Henry': None, 'David': None, 'Alex': None, 'Sue': None, 'Debbie': None,
+                         'Frank': None, 'Tom': None, 'Hank': None}
+
+        graph = Graph()
+        for name in all_verticies:
+            vertex = Vertex(name)
+            graph.add_vertex(vertex)
+            all_verticies[name] = vertex  # for testing and book keeping purposes
+        # connect parent / child as detailed in docstring
+        graph.add_edge(all_verticies['David'], all_verticies['Sally'])
+        graph.add_edge(all_verticies['David'], all_verticies['Sue'])
+        graph.add_edge(all_verticies['David'], all_verticies['Debbie'])
+        graph.add_edge(all_verticies['Sally'], all_verticies['Henry'])
+        graph.add_edge(all_verticies['Henry'], all_verticies['Alex'])
+        graph.add_edge(all_verticies['Alex'], all_verticies['Debbie'])
+        graph.add_edge(all_verticies['Sue'], all_verticies['Frank'])
+        graph.add_edge(all_verticies['Frank'], all_verticies['Tom'])
+        graph.add_edge(all_verticies['Tom'], all_verticies['Hank'])
+
+        print('\n*** Start Breadth First Traversal')
+        graph.breath_first_traversal(all_verticies['David'], echo_value)
+
+        # print('\n*** Start Depth first Traversal')
+        # graph.depth_first_traversal(all_verticies['David'], echo_value)
 
 
-
-
+    test_complex_graph()
