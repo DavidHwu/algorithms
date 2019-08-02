@@ -39,7 +39,7 @@ class Graph:
     """
 
     def __init__(self):
-        self.__verticies_dict = {}
+        self.__verticies = {}
 
     def __str__(self):
         """
@@ -62,7 +62,7 @@ class Graph:
 
         :return:
         """
-        return self.__verticies_dict.keys()
+        return self.__verticies.keys()
 
     def add_vertex(self, new_vertex: Vertex) -> None:
         """
@@ -74,8 +74,8 @@ class Graph:
         """
 
         # edge: each vertex has a unique set of edges
-        if new_vertex not in self.__verticies_dict:
-            self.__verticies_dict[new_vertex] = {}
+        if new_vertex not in self.__verticies:
+            self.__verticies[new_vertex] = {}
 
         # optional implementation using an ID (ie. unique value in DB row or GUID instead of in memory reference
         # if str(new_vertex.id) not in self.__verticies_dict:
@@ -91,12 +91,12 @@ class Graph:
         :return: None
         """
 
-        if start_vertex in self.__verticies_dict:
-            self.__verticies_dict[start_vertex][end_vertex] = value
+        if start_vertex in self.__verticies:
+            self.__verticies[start_vertex][end_vertex] = value
         else:
             self.add_vertex(start_vertex)
             self.add_vertex(end_vertex)  # ensure end_vertex also exists as well
-            self.__verticies_dict[start_vertex][end_vertex] = value
+            self.__verticies[start_vertex][end_vertex] = value
 
     def generate_edges(self) -> [{Vertex, Vertex}]:
         """
@@ -106,8 +106,8 @@ class Graph:
         """
 
         result = []  # TODO: inefficient, in an array in this loop results in Big O n^3... consider set
-        for start_vertex in self.__verticies_dict:
-            for end_vertex in self.__verticies_dict[start_vertex]:
+        for start_vertex in self.__verticies:
+            for end_vertex in self.__verticies[start_vertex]:
                 edge = {start_vertex, end_vertex}
                 if edge not in result:
                     result.append(edge)
@@ -131,7 +131,7 @@ class Graph:
 
             :return:
             """
-            queue = self.__verticies_dict[current_vertex].keys()
+            queue = self.__verticies[current_vertex].keys()
 
             for current_queue_vertex in queue:
                 if callback:
@@ -168,7 +168,7 @@ class Graph:
         visited[start_vertex] = True
 
         while queue:
-            if self.__verticies_dict[current_vertex]:
+            if self.__verticies[current_vertex]:
                 # neighbors exist
                 if current_vertex in queue:
                     queue.remove(current_vertex)  # only be valid for initial node/vertex
@@ -181,7 +181,7 @@ class Graph:
             if not callback(current_vertex):
                 break
 
-            for neighbor in self.__verticies_dict[current_vertex]:
+            for neighbor in self.__verticies[current_vertex]:
                 if neighbor in visited:
                     continue  # default, this is already set to True as the key would not in visited if not visited
                 else:
