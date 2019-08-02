@@ -74,7 +74,7 @@ class Graph:
         """
 
         # edge: each vertex has a unique set of edges
-        if str(new_vertex) not in self.__verticies_dict:
+        if new_vertex not in self.__verticies_dict:
             self.__verticies_dict[new_vertex] = {}
 
         # optional implementation using an ID (ie. unique value in DB row or GUID instead of in memory reference
@@ -105,7 +105,7 @@ class Graph:
         :return: List of set(starting vertex, ending vertex}
         """
 
-        result = []
+        result = []  # TODO: inefficient, in an array in this loop results in Big O n^3... consider set
         for start_vertex in self.__verticies_dict:
             for end_vertex in self.__verticies_dict[start_vertex]:
                 edge = {start_vertex, end_vertex}
